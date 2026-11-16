@@ -1,0 +1,20 @@
+# ============ 敏感配置 ============
+# 真实数据库账号密码不要提交。部署时从 config/config.example.php 复制成 config/config.php
+config/config.php
+
+# ============ 运行时产物 ============
+# 学生上传的附件（只保留目录安全策略文件）
+uploads/**
+!uploads/.htaccess
+
+*.log
+*.bak
+*.swp
+*.session
+.DS_Store
+Thumbs.db
+
+# ============ 编辑器 ============
+.idea/
+.vscode/
+*.code-workspace

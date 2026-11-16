@@ -1,0 +1,9 @@
+# config 目录：只放 config.php，一律禁止 Web 访问
+# （config.php 里有数据库账号密码）
+Options -Indexes
+Require all denied
+
+<IfModule !mod_authz_core.c>
+  Order allow,deny
+  Deny from all
+</IfModule>

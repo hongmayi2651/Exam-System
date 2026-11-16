@@ -1,0 +1,8 @@
+# sql 目录：建库脚本，一律禁止 Web 访问
+Options -Indexes
+Require all denied
+
+<IfModule !mod_authz_core.c>
+  Order allow,deny
+  Deny from all
+</IfModule>

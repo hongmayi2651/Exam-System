@@ -1,0 +1,37 @@
+# =====================================================================
+# Linux 服务器配置与管理 · 考试系统 —— 站点根目录安全策略
+# 与 docs/01-部署说明.md 第六节描述一致。
+#
+# 注意：若 Apache 对本站 AllowOverride None，本文件不生效。
+# 请在 server/virtualhost 里显式加同等规则（见 nginx.htaccess 与文档第六节）。
+# =====================================================================
+
+# 1. 禁止列目录
+Options -Indexes
+
+# 2. 敏感文件一律不对外提供
+#    （sql / 说明文档 / 日志 / 各种 ini 配置）
+<FilesMatch "\.(sql|md|markdown|txt|log|ini|sh|bak)$">
+  Require all denied
+</FilesMatch>
+
+# 3. 禁止直接访问源码目录
+#    lib / config / _tools 下的内容只对 PHP 运行时可见
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteRule ^(lib|config|_tools)(/|$) - [F,L]
+</IfModule>
+
+# 4. PHP 版本兼容：老 Apache（2.2 / httpd 2.4 早期）用下面这段
+<IfModule !mod_authz_core.c>
+  <FilesMatch "\.(sql|md|txt|log|ini|sh)$">
+    Order allow,deny
+    Deny from all
+  </FilesMatch>
+</IfModule>
+
+# 5. 关闭不必要的请求头信息
+<IfModule mod_headers.c>
+  Header unset X-Powered-By
+  Header unset Server
+</IfModule>

@@ -1,0 +1,26 @@
+# uploads 目录安全策略：一律不执行脚本，一律按下载处理
+Options -Indexes -ExecCGI
+RemoveHandler .php .php3 .php4 .php5 .php7 .php8 .phtml .phar .cgi .pl .py
+AddType text/plain .php .php3 .php4 .php5 .php7 .php8 .phtml .phar .cgi .pl
+
+<IfModule mod_php7.c>
+  php_flag engine off
+</IfModule>
+<IfModule mod_php5.c>
+  php_flag engine off
+</IfModule>
+<IfModule mod_php.c>
+  php_flag engine off
+</IfModule>
+
+# 上传目录里不允许 .htaccess 覆盖（防止有人塞新文件绕过）
+<FilesMatch "\.htaccess$">
+  Require all denied
+</FilesMatch>
+
+<IfModule !mod_authz_core.c>
+  <FilesMatch "\.htaccess$">
+    Order allow,deny
+    Deny from all
+  </FilesMatch>
+</IfModule>

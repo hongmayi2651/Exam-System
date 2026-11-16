@@ -1,0 +1,61 @@
+# =====================================================================
+# Linux 考试系统 —— Nginx 等价配置
+# Nginx 不认 .htaccess。把下面这段放进你的 server 块里（放在其它 location 之前），
+# 路径前缀按你实际的站点目录调整（示例假设站点在 /linux-exam/ 下）。
+# =====================================================================
+
+server {
+    listen 80;
+    server_name exam.example.com;
+
+    # 站点根目录
+    root /var/www/linux-exam;
+    index index.php;
+
+    # 上传大小：与后台「单个附件上限」保持一致，留点余量
+    client_max_body_size 25m;
+
+    # ---------- 安全规则（等价于 .htaccess） ----------
+
+    # 1. 禁止访问源码目录
+    location ~ ^/linux-exam/(lib|config|sql|_tools)(/|$) {
+        deny all;
+    }
+
+    # 2. 禁止访问敏感文件类型
+    location ~* \.(sql|md|markdown|txt|log|ini|sh|bak)$ {
+        deny all;
+    }
+
+    # 3. uploads 目录：只许读，禁止执行任何脚本
+    location ~* ^/linux-exam/uploads/.*\.(php|phtml|phar|php3|php4|php5|php7|php8|cgi|pl|py)$ {
+        deny all;
+    }
+    location ^~ /linux-exam/uploads/ {
+        # 目录列举由 autoindex off 默认关闭
+        autoindex off;
+    }
+
+    # 4. 上传目录外的 .htaccess 无意义，直接不暴露
+    location ~ /\. {
+        deny all;
+    }
+
+    # ---------- PHP 处理 ----------
+    location ~ [^/]\.php(/|$) {
+        fastcgi_pass   unix:/run/php/php8.1-fpm.sock;   # 按你的实际路径改
+        fastcgi_param  SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        include        fastcgi_params;
+        # 只允许真正由 PHP 处理的入口，防止 config.php / lib/*.php 被直接访问执行
+        if (!-f $fastcgi_script_name) {
+            return 404;
+        }
+    }
+
+    # 5. 禁止暴露服务器/PHP 版本
+    server_tokens off;
+
+    location / {
+        try_files $uri $uri/ /index.php?$query_string;
+    }
+}
